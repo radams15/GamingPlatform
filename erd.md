@@ -18,6 +18,7 @@ erDiagram
     }
 
     inventoryitem[InventoryItem] {
+        Id INTEGER PK
         Username TEXT FK
         ItemId INTEGER FK
     }
