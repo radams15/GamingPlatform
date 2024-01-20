@@ -4,6 +4,7 @@ DROP ROLE IF EXISTS Player;
 DROP ROLE IF EXISTS Manager;
 DROP TABLE IF EXISTS "user";
 DROP TABLE IF EXISTS Item;
+DROP TABLE IF EXISTS InventoryItem;
 DROP TABLE IF EXISTS UserPurchase;
 DROP TABLE IF EXISTS Team;
 DROP TABLE IF EXISTS TeamMember;
@@ -19,9 +20,14 @@ CREATE TABLE "user" (
 );
 
 CREATE TABLE Item (
-    Id INTEGER PRIMARY KEY,
+    Id SERIAL PRIMARY KEY,
     Price INTEGER,
     Name TEXT
+);
+
+CREATE TABLE InventoryItem (
+    Username TEXT REFERENCES "user"(Username),
+    ItemId INTEGER REFERENCES Item(Id)
 );
 
 CREATE TABLE UserPurchase (
