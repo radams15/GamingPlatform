@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS InventoryItem;
 DROP TABLE IF EXISTS UserPurchase;
 DROP TABLE IF EXISTS Team;
 DROP TABLE IF EXISTS TeamMember;
+DROP TABLE IF EXISTS TeamJoinRequest;
 DROP TABLE IF EXISTS Tournament;
 DROP TABLE IF EXISTS TournamentTeam;
 
@@ -46,6 +47,13 @@ CREATE TABLE Team (
 CREATE TABLE TeamMember (
     TeamName TEXT REFERENCES Team(Name),
     Username TEXT REFERENCES "user"(Username)
+);
+
+CREATE TABLE TeamJoinRequest (
+    Id SERIAL PRIMARY KEY,
+    TeamName TEXT REFERENCES Team(Name),
+    Username TEXT REFERENCES "user"(Username),
+    Approved BOOLEAN
 );
 
 CREATE TABLE Tournament (

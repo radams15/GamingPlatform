@@ -59,7 +59,7 @@ CREATE FUNCTION ApplyToBuy(itemId INTEGER, fromUser whoami DEFAULT CURRENT_USER)
 $func$
 BEGIN
     INSERT INTO userpurchase
-        VALUES (fromUser, itemid, false);
+        VALUES (fromUser, itemId, false);
 
     RETURN 0;
 END
