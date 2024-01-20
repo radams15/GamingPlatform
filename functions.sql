@@ -2,7 +2,7 @@ DROP FUNCTION IF EXISTS Inventory;
 DROP FUNCTION IF EXISTS TransferBalance;
 DROP FUNCTION IF EXISTS ApplyToBuy;
 DROP FUNCTION IF EXISTS ListPurchaseApplications;
-DROP FUNCTION IF EXISTS ApprovePurchaseApplications;
+DROP FUNCTION IF EXISTS ApprovePurchaseApplication;
 
 -- Allows for SECURITY DEFINER functions to find the current user
 -- https://stackoverflow.com/questions/31712286/recording-the-invoker-of-a-postgres-function-that-is-set-to-security-definer
@@ -73,21 +73,55 @@ BEGIN
         SELECT userpurchase.id, userpurchase.username, item.name, item.price, userpurchase.approved
         FROM userpurchase
             JOIN item
-                ON userpurchase.itemid = item.id;
+                ON userpurchase.itemid = item.id
+        WHERE userpurchase.approved <> true;
 END
 $func$ LANGUAGE PLPGSQL SECURITY INVOKER;
 
-CREATE FUNCTION ApprovePurchaseApplications(applicationId INTEGER) RETURNS INTEGER AS
+-- Approve a purchase
+CREATE FUNCTION ApprovePurchaseApplication(applicationId INTEGER) RETURNS INTEGER AS
 $func$
 DECLARE
-    balance INTEGER;
+    applicationUser TEXT;
+    userBalance INTEGER;
+    itemPrice INTEGER;
+    itemId INTEGER;
+
+    alreadyApproved BOOLEAN;
 BEGIN
-    SELECT INTO balance "user".balance
+    SELECT INTO alreadyApproved, applicationUser, userBalance, itemPrice, itemId
+        userpurchase.approved, "user".username, "user".balance, item.price, item.id
     FROM userpurchase
         JOIN "user"
             ON userpurchase.username = "user".username
+        JOIN item
+            ON userpurchase.itemid = item.id
     WHERE userpurchase.id = applicationId;
 
-    RAISE NOTICE 'User balance: %', balance;
+    IF alreadyApproved
+    THEN
+        RAISE NOTICE 'Application already approved';
+        RETURN 1;
+    END IF;
+
+    userBalance = userBalance - itemPrice;
+
+    IF userBalance < 0
+    THEN
+        RAISE NOTICE 'Insufficient funds for approval';
+        RETURN 1;
+    END IF;
+
+    UPDATE "user" SET balance=userBalance
+        WHERE "user".username = applicationUser;
+
+    UPDATE userpurchase SET approved=true
+        WHERE id = applicationId;
+
+    INSERT INTO inventoryitem VALUES (applicationUser, itemId);
+
+    RAISE NOTICE 'New balance: %, price %', userBalance, itemPrice;
+
+    RETURN 0;
 END
 $func$ LANGUAGE PLPGSQL SECURITY INVOKER;
