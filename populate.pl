@@ -41,9 +41,14 @@ for(@users) {
 
     $dbh->do('INSERT INTO "user" VALUES (?, ?)', {}, $_, 10000);
 
-    for my $i (1..2) {
+    for my $i (1..3) {
         my $item = $items[int rand@items];
         $dbh->do('INSERT INTO InventoryItem VALUES (?, ?)', {}, $_, $item->[2]);
+    }
+
+    for my $i (1..1) {
+        my $item = $items[int rand@items];
+        $dbh->do('INSERT INTO UserPurchase (username, itemid, approved) VALUES (?, ?, false)', {}, $_, $item->[2]);
     }
 }
 

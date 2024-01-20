@@ -31,6 +31,7 @@ CREATE TABLE InventoryItem (
 );
 
 CREATE TABLE UserPurchase (
+    Id SERIAL PRIMARY KEY,
     Username TEXT REFERENCES "user"(Username),
     ItemId INTEGER REFERENCES Item(Id),
     Approved BOOLEAN
