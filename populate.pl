@@ -39,17 +39,16 @@ for(@users) {
     $dbh->do("CREATE USER $_");
     $dbh->do("GRANT player to $_");
 
-    $dbh->do('INSERT INTO "user" VALUES (?, ?)', {}, $_, 0);
+    $dbh->do('INSERT INTO "user" VALUES (?, ?)', {}, $_, 10000);
 
     for my $i (1..2) {
         my $item = $items[int rand@items];
-        print @$item;
         $dbh->do('INSERT INTO InventoryItem VALUES (?, ?)', {}, $_, $item->[2]);
     }
 }
 
 for(@{$dbh->selectall_arrayref('SELECT * FROM "user";')}) {
-    printf "%s has £%s\n", $_->[0], $_->[1];
+    printf "%s has £%s\n", $_->[0], $_->[1]/100;
 }
 
 $dbh->commit;
