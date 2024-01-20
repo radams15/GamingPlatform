@@ -1,6 +1,7 @@
 DROP PROCEDURE IF EXISTS CreateTeam;
 DROP PROCEDURE IF EXISTS RequestJoinTeam;
 DROP FUNCTION IF EXISTS ListTeamRequests;
+DROP PROCEDURE IF EXISTS AcceptTeamRequest;
 
 -- Create a team owned by you.
 CREATE PROCEDURE CreateTeam(teamName TEXT, owner whoami DEFAULT CURRENT_USER) AS
@@ -41,9 +42,27 @@ BEGIN
 end;
 $func$ LANGUAGE PLPGSQL SECURITY INVOKER;
 
-CREATE PROCEDURE AcceptTeamRequest(requestId INTEGER, requestingUser whoami DEFAULT CURRENT_USER) AS
+CREATE PROCEDURE AcceptTeamRequest(requestId INTEGER, callingUser whoami DEFAULT CURRENT_USER) AS
 $func$
+DECLARE
+    teamLeader TEXT;
+    teamName TEXT;
+    requestingUser TEXT;
 BEGIN
-    
+    SELECT INTO teamLeader, teamName, requestingUser
+        team.leader, team.name, t.username
+        FROM team
+            JOIN public.teamjoinrequest t on team.name = t.teamname
+    WHERE t.id = requestId;
+
+    IF callingUser <> teamLeader
+    THEN
+        RAISE NOTICE 'You do not own this team';
+    END IF;
+
+    UPDATE teamjoinrequest SET approved=true
+    WHERE id = requestId;
+
+    INSERT INTO teammember VALUES (teamname, requestingUser);
 end;
 $func$ LANGUAGE PLPGSQL SECURITY DEFINER;
