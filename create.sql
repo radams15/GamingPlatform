@@ -2,7 +2,7 @@ DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;
 DROP ROLE IF EXISTS Player;
 DROP ROLE IF EXISTS Manager;
-DROP TABLE IF EXISTS "User";
+DROP TABLE IF EXISTS "user";
 DROP TABLE IF EXISTS Item;
 DROP TABLE IF EXISTS UserPurchase;
 DROP TABLE IF EXISTS Team;
@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS TournamentTeam;
 CREATE ROLE Player;
 CREATE ROLE Manager;
 
-CREATE TABLE "User" (
+CREATE TABLE "user" (
     Username TEXT PRIMARY KEY,
     Balance INTEGER
 );
@@ -25,7 +25,7 @@ CREATE TABLE Item (
 );
 
 CREATE TABLE UserPurchase (
-    Username TEXT REFERENCES "User"(Username),
+    Username TEXT REFERENCES "user"(Username),
     ItemId INTEGER REFERENCES Item(Id),
     Approved BOOLEAN
 );
@@ -33,12 +33,12 @@ CREATE TABLE UserPurchase (
 
 CREATE TABLE Team (
     Name TEXT PRIMARY KEY,
-    Leader TEXT REFERENCES "User"(Username)
+    Leader TEXT REFERENCES "user"(Username)
 );
 
 CREATE TABLE TeamMember (
     TeamName TEXT REFERENCES Team(Name),
-    Username TEXT REFERENCES "User"(Username)
+    Username TEXT REFERENCES "user"(Username)
 );
 
 CREATE TABLE Tournament (
