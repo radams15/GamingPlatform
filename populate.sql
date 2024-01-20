@@ -9,7 +9,10 @@ BEGIN
         EXECUTE format($fmt$
             DROP USER IF EXISTS %I;
             CREATE USER %I;
-        $fmt$, var, var);
+            GRANT player to %I;
+        $fmt$, var, var, var);
+
+        INSERT INTO "user" VALUES (var, 0);
     END LOOP;
 END;
 $populate$

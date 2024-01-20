@@ -1,3 +1,10 @@
 #!/bin/sh
 
-podman-compose exec -u postgres db psql $@
+user="postgres"
+
+if [ "$1" != "" ]
+then
+    user=$1
+fi
+
+podman-compose exec -u postgres db psql -U $user postgres
