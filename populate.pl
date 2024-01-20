@@ -13,6 +13,8 @@ my @creds = ('postgres', 'password');
 my $dbh = DBI->connect("dbi:Pg:dbname=$dbname;host=$host", @creds, {AutoCommit => 0, RaiseError => 1})
     or die "Unable to connect!";
 
+my @files = ('create.sql', 'functions.sql', 'policy.sql');
+
 my @users = map {"u$_"} (1..3);
 
 my @items = (
@@ -23,6 +25,15 @@ my @items = (
     ["Wand", 20],
     ["Armour", 25]
 );
+
+
+for (@files) {
+    open FH, '<', $_;
+    my $sql = join '', <FH>;
+    close FH;
+
+    $dbh->do($sql);
+}
 
 $dbh->do('DELETE FROM inventoryitem');
 $dbh->do("DELETE FROM item");
@@ -52,9 +63,7 @@ for(@users) {
     }
 }
 
-for(@{$dbh->selectall_arrayref('SELECT * FROM "user";')}) {
-    printf "%s has £%s\n", $_->[0], $_->[1]/100;
-}
+
 
 $dbh->commit;
 $dbh->disconnect;
