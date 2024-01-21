@@ -36,3 +36,8 @@ GRANT SELECT ON teamjoinrequest to player;
 GRANT SELECT, UPDATE ON member to manager;
 GRANT SELECT, UPDATE ON memberpurchase to manager;
 GRANT INSERT ON inventoryitem to manager;
+GRANT SELECT ON team to manager;
+GRANT SELECT ON teammember to manager;
+GRANT SELECT ON tournament to manager;
+GRANT SELECT ON tournamentteam to manager;
+GRANT SELECT ON teamjoinrequest to manager;
