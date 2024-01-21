@@ -68,9 +68,13 @@ for(@items) {
     push @$_, last_inserted "item";
 }
 
+exec_sql("DROP USER IF EXISTS m1");
+exec_sql("CREATE USER m1 BYPASSRLS");
+exec_sql("GRANT manager to m1");
+
 for(@users) {
     exec_sql("DROP USER IF EXISTS $_");
-    exec_sql("CREATE USER $_");
+    exec_sql("CREATE USER $_ INHERIT");
     exec_sql("GRANT player to $_");
 
     exec_sql('INSERT INTO Member VALUES (?, ?)', $_, 10000);

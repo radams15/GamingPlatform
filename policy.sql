@@ -3,6 +3,8 @@ DROP POLICY IF EXISTS inventory_row_policy ON inventoryitem;
 DROP POLICY IF EXISTS purchase_row_policy ON memberpurchase;
 DROP POLICY IF EXISTS teamrequest_row_policy ON teamjoinrequest;
 
+DROP POLICY IF EXISTS manager_member_policy ON Member;
+
 CREATE POLICY user_row_policy ON Member FOR ALL TO player USING (username=current_user);
 CREATE POLICY inventory_row_policy ON inventoryitem FOR ALL TO player USING (username=current_user);
 CREATE POLICY purchase_row_policy ON memberpurchase FOR ALL TO player USING (username=current_user);
@@ -30,3 +32,5 @@ GRANT SELECT ON teammember to player;
 GRANT SELECT ON tournament to player;
 GRANT SELECT ON tournamentteam to player;
 GRANT SELECT ON teamjoinrequest to player;
+
+GRANT SELECT ON member to manager;

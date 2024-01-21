@@ -61,7 +61,7 @@ BEGIN
     UPDATE Member SET balance=srcBalance WHERE username = fromUser;
     UPDATE Member SET balance=dstBalance WHERE username = toUser;
 
-    RAISE NOTICE 'Src: %, Dst: %', srcBalance, dstBalance;
+    RAISE NOTICE 'New Balance: %', srcBalance;
 END
 $func$ LANGUAGE PLPGSQL SECURITY DEFINER;
 
@@ -69,7 +69,7 @@ $func$ LANGUAGE PLPGSQL SECURITY DEFINER;
 CREATE PROCEDURE ApplyToBuy(itemId INTEGER, fromUser whoami DEFAULT CURRENT_USER) AS
 $func$
 BEGIN
-    INSERT INTO memberpurchase
+    INSERT INTO memberpurchase (username, itemid, approved)
         VALUES (fromUser, itemId, false);
 END
 $func$ LANGUAGE PLPGSQL SECURITY DEFINER;

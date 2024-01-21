@@ -5,14 +5,144 @@ All these are performed as the user 'u1' unless specified otherwise.
 
 \subsubsection{Transfer Balance}
 
+Here, the player wishes to transfer 1000 credits to another player. The first command shows their current balance of 10000 credits.
+
+Next, they call \verb|TransferBalance| to transfer 1000 credits to u2. This informs them that their new balance is 9000 credits.
+
+\begin{lstlisting}[language=SQL]
+postgres=> select * from Member;
+ username | balance 
+----------+---------
+ u1       |   10000
+(1 row)
+
+postgres=> call TransferBalance('u2', 1000);
+NOTICE:  u1 => u2
+NOTICE:  New Balance: 9000
+CALL
+postgres=> select * from Member;
+ username | balance 
+----------+---------
+ u1       |    9000
+(1 row)
+\end{lstlisting}
+
+Running the following as 'manager' shows us the transfer has been successful.
+
+\begin{lstlisting}[language=SQL]
+postgres=> select * from Member;
+ username | balance 
+----------+---------
+ u3       |   10000
+ u1       |    9000
+ u2       |   11000
+(3 rows)
+\end{lstlisting}
+
+If the user has insufficient funds, for example u1 wanting to transfer 1000000 to u2:
+
+\begin{lstlisting}[language=SQL]
+postgres=> call TransferBalance('u2', 1000000);
+NOTICE:  u1 => u2
+NOTICE:  Cannot transfer more money than you have
+\end{lstlisting}
+
+\subsubsection{View inventory}
+
+To view the inventory, the user simply executes:
+
+\begin{lstlisting}[language=SQL]
+postgres=> select * from inventory();
+   name    | price 
+-----------+-------
+ Potion    |     5
+ Potion    |     5
+ Spellbook |    40
+(3 rows)
+\end{lstlisting}
+
 \subsubsection{Apply for Purchase}
+
+Here, the user wants to purchase an item.
+
+\begin{lstlisting}[language=SQL]
+postgres=> select * from item;
+ id | price |    name    
+----+-------+------------
+  1 |    50 | Sword
+  2 |     5 | Potion
+  3 |    10 | Magic Tome
+  4 |    40 | Spellbook
+  5 |    20 | Wand
+  6 |    25 | Armour
+(6 rows)
+\end{lstlisting}
+
+They, for instance, want to buy a magic tome.
+
+\begin{lstlisting}[language=SQL]
+postgres=> call ApplyToBuy(3);
+CALL
+\end{lstlisting}
+
+They can then list any pending applications.
+
+\begin{lstlisting}[language=SQL]
+postgres=> select * from ListPurchaseApplications();
+ id | username |  itemname  | itemprice | approved 
+----+----------+------------+-----------+----------
+  4 | u1       | Magic Tome |        10 | f
+(1 row)
+\end{lstlisting}
 
 \subsubsection{Create Team}
 
+Players can create teams as follows:
+
+\begin{lstlisting}[language=SQL]
+postgres=> call CreateTeam('u1_team');
+NOTICE:  Create team u1_team. Leader u1
+CALL
+\end{lstlisting}
+
 \subsubsection{Apply to Join Team}
+
+Here, u2 wishes to join the previously created team 'u1\_team' (run as u2):
+
+\begin{lstlisting}[language=SQL]
+postgres=> call RequestJoinTeam('u1_team');
+NOTICE:  Request to join team u1_team.
+CALL
+\end{lstlisting}
 
 \subsubsection{Accept Team Join Request}
 
+U1 can see all pending requests for his teams:
+
+\begin{lstlisting}[language=SQL]
+postgres=> select * from ListTeamRequests();
+ id | teamname | requestinguser 
+----+----------+----------------
+  2 | u1_team  | u2
+(1 row)
+\end{lstlisting}
+
+
+They can then accept the request:
+
+\begin{lstlisting}[language=SQL]
+postgres=> call AcceptTeamRequest(2);
+CALL
+\end{lstlisting}
+
+And observe there are no further pending requests:
+
+\begin{lstlisting}[language=SQL]
+postgres=> select * from ListTeamRequests();
+ id | teamname | requestinguser 
+----+----------+----------------
+(0 rows)
+\end{lstlisting}
 
 \subsection{Manager}
 
