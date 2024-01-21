@@ -162,6 +162,11 @@ postgres=> select * from ListPurchaseApplications();
 
 Approving the purchase shows the balance of u1 being decremented by the price of the item.
 
+Similarly to transfers, if the purchaser does not have enough funds to complete the transaction, this step will fail.
+
+The checking for funds is done here rather than at the request stage to ensure the user does not decrease their balance between
+the times of the request and approval.
+
 \begin{lstlisting}[language=SQL]
 postgres=> call ApprovePurchaseApplication(4);
 NOTICE:  New balance: 8990, price 10

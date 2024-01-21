@@ -1,0 +1,21 @@
+\figureImage{erd.png}{Entity Relationship Diagram for the Database}{0.5}
+
+The data is split into 9 tables as seen above.
+
+Users are stored in the "member" table. This would have been called user but due to the Postgres builtin table user this would have caused confusion.
+
+"Item" is a table of all known items available to own or purchase. They simply have an id, name and price to purchase.
+
+Members have an inventory, with the items in the inventory described by a table "InventoryItem". This has a 1:many relationship with member, i.e. members have many inventory items.
+
+"MemberPurchase" describes items that the user is in the process of purchasing, i.e. they have made a request to purchase the item. This has a 1:many relationship with member, and a 1:1 relationship with item, as a member can have many purchase requests, each of which reference a single item.
+
+"Tournament" is a table which simply stores the tournament name as the primary key.
+
+"TournamentTeam" stores teams that participate in a tournament. It has the foreign keys of "TournamentName" referencing the tournament the team is part of, and the foreign key "TeamName", referencing the team being part of the tournament.
+
+"TeamMember" stores members of a team. It is a joining table for team and member. It references "TournamentTeam" by the "teamname" foreign key, and "Member" by the "username" field.
+
+"TeamJoinRequest" is a table made where requests to join teams are placed. When a user requests to join a team, their username and the team name are placed in this table, allowing the team leader to accept the request.
+
+"Team" stores the information about a team. The fields are the primary key of "name" - the team name, and "leader" - the owner of the team which administers it.
