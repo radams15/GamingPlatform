@@ -1,6 +1,6 @@
 DROP FUNCTION IF EXISTS Inventory;
-DROP FUNCTION IF EXISTS TransferBalance;
-DROP FUNCTION IF EXISTS ApplyToBuy;
+DROP PROCEDURE IF EXISTS TransferBalance;
+DROP PROCEDURE IF EXISTS ApplyToBuy;
 DROP FUNCTION IF EXISTS ListPurchaseApplications;
 DROP PROCEDURE IF EXISTS ApprovePurchaseApplication;
 
@@ -31,7 +31,7 @@ $func$
 $func$ LANGUAGE SQL SECURITY INVOKER;
 
 -- Transfer balance from your account to another user.
-CREATE FUNCTION TransferBalance(toUser TEXT, amount INTEGER, fromUser whoami DEFAULT CURRENT_USER) RETURNS INTEGER AS
+CREATE PROCEDURE TransferBalance(toUser TEXT, amount INTEGER, fromUser whoami DEFAULT CURRENT_USER) AS
 $func$
 DECLARE
     srcBalance INTEGER;
@@ -40,8 +40,10 @@ BEGIN
     IF fromUser = toUser
     THEN
         RAISE NOTICE 'Cannot transfer more to yourself';
-        RETURN 1;
+        RETURN;
     END IF;
+
+    raise notice '% => %', fromUser, toUser;
 
     SELECT INTO srcBalance balance from Member WHERE username = fromUser;
     SELECT INTO dstBalance balance from Member WHERE username = toUser;
@@ -51,7 +53,7 @@ BEGIN
     IF srcBalance < 0
     THEN
         RAISE NOTICE 'Cannot transfer more money than you have';
-        RETURN 1;
+        RETURN;
     END IF;
 
     dstBalance = dstBalance + amount;
@@ -60,19 +62,15 @@ BEGIN
     UPDATE Member SET balance=dstBalance WHERE username = toUser;
 
     RAISE NOTICE 'Src: %, Dst: %', srcBalance, dstBalance;
-
-    RETURN 0;
 END
 $func$ LANGUAGE PLPGSQL SECURITY DEFINER;
 
 -- Apply to buy an item from the store.
-CREATE FUNCTION ApplyToBuy(itemId INTEGER, fromUser whoami DEFAULT CURRENT_USER) RETURNS INTEGER AS
+CREATE PROCEDURE ApplyToBuy(itemId INTEGER, fromUser whoami DEFAULT CURRENT_USER) AS
 $func$
 BEGIN
     INSERT INTO memberpurchase
         VALUES (fromUser, itemId, false);
-
-    RETURN 0;
 END
 $func$ LANGUAGE PLPGSQL SECURITY DEFINER;
 

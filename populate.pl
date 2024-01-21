@@ -22,11 +22,12 @@ sub exec_sql {
 
     my $formatted = $sql;
     for (@args) {
+        my $arg = $_;
         unless(/^\d+$/) {
-            $_ = "'$_'";
+            $arg = "'$arg'";
         }
 
-        $formatted =~ s/\?/$_/;
+        $formatted =~ s/\?/$arg/;
     }
     print "Execute: $formatted\n";
 

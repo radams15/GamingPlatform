@@ -1,11 +1,11 @@
 ```mermaid
 erDiagram
-    user[User] {
+    user[Member] {
         Username TEXT PK
         Balance INTEGER
     }
-    
-    userpurchase[UserPurchase] {
+
+    userpurchase[MemberPurchase] {
         Username TEXT FK
         ItemId INTEGER FK
         Approved BOOLEAN
@@ -45,7 +45,17 @@ erDiagram
         TeamName TEXT FK
     }
 
-    
+    teamjoinrequest[TeamJoinRequest] {
+        Id SERIAL PK
+        TeamName TEXT FK
+        Username TEXT FK
+        Approved BOOLEAN
+    }
+
+    teamjoinrequest }o--|| user: has
+    teamjoinrequest }o--|| team: has
+
+
     user ||--o{ userpurchase: has
     user ||--o{ inventoryitem: has
     userpurchase |o--|| item: has

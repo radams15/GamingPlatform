@@ -1,0 +1,13 @@
+*-blx.bib
+*.log
+*.lgpl
+*.dvi
+*.aux
+*.xml
+*.pdf
+*.toc
+*.out
+*.dfpl
+*.frpl
+*.tfpl
+*.topl
