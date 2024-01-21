@@ -146,4 +146,48 @@ postgres=> select * from ListTeamRequests();
 
 \subsection{Manager}
 
+All these are performed as the manager user 'm1' unless specified otherwise.
+
 \subsubsection{Approve Purchase}
+
+Managers can list pending purchases:
+
+\begin{lstlisting}[language=SQL]
+postgres=> select * from ListPurchaseApplications();
+ id | username |  itemname  | itemprice | approved 
+----+----------+------------+-----------+----------
+  4 | u1       | Magic Tome |        10 | f
+(1 row)
+\end{lstlisting}
+
+Approving the purchase shows the balance of u1 being decremented by the price of the item.
+
+\begin{lstlisting}[language=SQL]
+postgres=> call ApprovePurchaseApplication(4);
+NOTICE:  New balance: 8990, price 10
+CALL
+\end{lstlisting}
+
+Now there are no further pending applications.
+
+\begin{lstlisting}[language=SQL]
+postgres=> select * from ListPurchaseApplications();
+ id | username | itemname | itemprice | approved 
+----+----------+----------+-----------+----------
+(0 rows)
+\end{lstlisting}
+
+Running the following as u1 we can see the magic tome has been added.
+
+\begin{lstlisting}[language=SQL]
+postgres=> select * from Inventory();
+    name    | price 
+------------+-------
+ Potion     |     5
+ Potion     |     5
+ Magic Tome |    10
+ Spellbook  |    40
+(4 rows)
+\end{lstlisting}
+
+
