@@ -2,10 +2,10 @@ DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;
 DROP ROLE IF EXISTS Player;
 DROP ROLE IF EXISTS Manager;
-DROP TABLE IF EXISTS "user";
+DROP TABLE IF EXISTS Member;
 DROP TABLE IF EXISTS Item;
 DROP TABLE IF EXISTS InventoryItem;
-DROP TABLE IF EXISTS UserPurchase;
+DROP TABLE IF EXISTS MemberPurchase;
 DROP TABLE IF EXISTS Team;
 DROP TABLE IF EXISTS TeamMember;
 DROP TABLE IF EXISTS TeamJoinRequest;
@@ -15,7 +15,7 @@ DROP TABLE IF EXISTS TournamentTeam;
 CREATE ROLE Player;
 CREATE ROLE Manager;
 
-CREATE TABLE "user" (
+CREATE TABLE Member (
     Username TEXT PRIMARY KEY,
     Balance INTEGER
 );
@@ -27,13 +27,13 @@ CREATE TABLE Item (
 );
 
 CREATE TABLE InventoryItem (
-    Username TEXT REFERENCES "user"(Username),
+    Username TEXT REFERENCES Member (Username),
     ItemId INTEGER REFERENCES Item(Id)
 );
 
-CREATE TABLE UserPurchase (
+CREATE TABLE MemberPurchase (
     Id SERIAL PRIMARY KEY,
-    Username TEXT REFERENCES "user"(Username),
+    Username TEXT REFERENCES Member (Username),
     ItemId INTEGER REFERENCES Item(Id),
     Approved BOOLEAN
 );
@@ -41,18 +41,18 @@ CREATE TABLE UserPurchase (
 
 CREATE TABLE Team (
     Name TEXT PRIMARY KEY,
-    Leader TEXT REFERENCES "user"(Username)
+    Leader TEXT REFERENCES Member (Username)
 );
 
 CREATE TABLE TeamMember (
     TeamName TEXT REFERENCES Team(Name),
-    Username TEXT REFERENCES "user"(Username)
+    Username TEXT REFERENCES Member (Username)
 );
 
 CREATE TABLE TeamJoinRequest (
     Id SERIAL PRIMARY KEY,
     TeamName TEXT REFERENCES Team(Name),
-    Username TEXT REFERENCES "user"(Username),
+    Username TEXT REFERENCES Member (Username),
     Approved BOOLEAN
 );
 

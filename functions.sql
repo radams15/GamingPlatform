@@ -43,8 +43,8 @@ BEGIN
         RETURN 1;
     END IF;
 
-    SELECT INTO srcBalance balance from "user" WHERE username = fromUser;
-    SELECT INTO dstBalance balance from "user" WHERE username = toUser;
+    SELECT INTO srcBalance balance from Member WHERE username = fromUser;
+    SELECT INTO dstBalance balance from Member WHERE username = toUser;
 
     srcBalance = srcBalance - amount;
 
@@ -56,8 +56,8 @@ BEGIN
 
     dstBalance = dstBalance + amount;
 
-    UPDATE "user" SET balance=srcBalance WHERE username = fromUser;
-    UPDATE "user" SET balance=dstBalance WHERE username = toUser;
+    UPDATE Member SET balance=srcBalance WHERE username = fromUser;
+    UPDATE Member SET balance=dstBalance WHERE username = toUser;
 
     RAISE NOTICE 'Src: %, Dst: %', srcBalance, dstBalance;
 
@@ -69,7 +69,7 @@ $func$ LANGUAGE PLPGSQL SECURITY DEFINER;
 CREATE FUNCTION ApplyToBuy(itemId INTEGER, fromUser whoami DEFAULT CURRENT_USER) RETURNS INTEGER AS
 $func$
 BEGIN
-    INSERT INTO userpurchase
+    INSERT INTO memberpurchase
         VALUES (fromUser, itemId, false);
 
     RETURN 0;
@@ -84,11 +84,11 @@ AS
 $func$
 BEGIN
     RETURN QUERY
-        SELECT userpurchase.id, userpurchase.username, item.name, item.price, userpurchase.approved
-        FROM userpurchase
+        SELECT memberpurchase.id, memberpurchase.username, item.name, item.price, memberpurchase.approved
+        FROM memberpurchase
             JOIN item
-                ON userpurchase.itemid = item.id
-        WHERE userpurchase.approved <> true;
+                ON memberpurchase.itemid = item.id
+        WHERE memberpurchase.approved <> true;
 END
 $func$ LANGUAGE PLPGSQL SECURITY INVOKER;
 
@@ -104,13 +104,13 @@ DECLARE
     alreadyApproved BOOLEAN;
 BEGIN
     SELECT INTO alreadyApproved, applicationUser, userBalance, itemPrice, itemId
-        userpurchase.approved, "user".username, "user".balance, item.price, item.id
-    FROM userpurchase
-        JOIN "user"
-            ON userpurchase.username = "user".username
+        memberpurchase.approved, Member.username, Member.balance, item.price, item.id
+    FROM memberpurchase
+        JOIN Member
+            ON memberpurchase.username = Member.username
         JOIN item
-            ON userpurchase.itemid = item.id
-    WHERE userpurchase.id = applicationId;
+            ON memberpurchase.itemid = item.id
+    WHERE memberpurchase.id = applicationId;
 
     IF alreadyApproved
     THEN
@@ -126,10 +126,10 @@ BEGIN
         RETURN;
     END IF;
 
-    UPDATE "user" SET balance=userBalance
-        WHERE "user".username = applicationUser;
+    UPDATE Member SET balance=userBalance
+        WHERE Member.username = applicationUser;
 
-    UPDATE userpurchase SET approved=true
+    UPDATE memberpurchase SET approved=true
         WHERE id = applicationId;
 
     INSERT INTO inventoryitem VALUES (applicationUser, itemId);

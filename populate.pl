@@ -37,7 +37,7 @@ for (@files) {
 
 $dbh->do('DELETE FROM inventoryitem');
 $dbh->do("DELETE FROM item");
-$dbh->do('DELETE FROM "user"');
+$dbh->do('DELETE FROM Member');
 
 for(@items) {
     $dbh->do("INSERT INTO Item(name, price) VALUES (?, ?);", {}, @$_);
@@ -50,7 +50,7 @@ for(@users) {
     $dbh->do("CREATE USER $_");
     $dbh->do("GRANT player to $_");
 
-    $dbh->do('INSERT INTO "user" VALUES (?, ?)', {}, $_, 10000);
+    $dbh->do('INSERT INTO Member VALUES (?, ?)', {}, $_, 10000);
 
     for my $i (1..3) {
         my $item = $items[int rand@items];
@@ -59,7 +59,7 @@ for(@users) {
 
     for my $i (1..1) {
         my $item = $items[int rand@items];
-        $dbh->do('INSERT INTO UserPurchase (username, itemid, approved) VALUES (?, ?, false)', {}, $_, $item->[2]);
+        $dbh->do('INSERT INTO MemberPurchase (username, itemid, approved) VALUES (?, ?, false)', {}, $_, $item->[2]);
     }
 }
 
