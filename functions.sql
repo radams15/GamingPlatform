@@ -155,6 +155,7 @@ BEGIN
 end;
 $func$ LANGUAGE PLPGSQL SECURITY DEFINER;
 
+-- Request to join a team
 CREATE PROCEDURE RequestJoinTeam(teamToJoin TEXT, requestingUser whoami DEFAULT CURRENT_USER) AS
 $func$
 BEGIN
@@ -174,6 +175,7 @@ BEGIN
 end;
 $func$ LANGUAGE PLPGSQL SECURITY DEFINER;
 
+-- List requests to teams you lead
 CREATE FUNCTION ListTeamRequests() RETURNS TABLE(id INTEGER, teamName TEXT, requestingUser TEXT) AS
 $func$
 BEGIN
@@ -184,6 +186,7 @@ BEGIN
 end;
 $func$ LANGUAGE PLPGSQL SECURITY INVOKER;
 
+-- Accept a team request, only works for teams you lead
 CREATE PROCEDURE AcceptTeamRequest(requestId INTEGER, callingUser whoami DEFAULT CURRENT_USER) AS
 $func$
 DECLARE

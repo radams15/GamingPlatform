@@ -13,6 +13,28 @@ my @creds = ('postgres', 'password');
 my $dbh = DBI->connect("dbi:Pg:dbname=$dbname;host=$host", @creds, {AutoCommit => 0, RaiseError => 1})
     or die "Unable to connect!";
 
+sub last_inserted {
+    $dbh->last_insert_id(undef, "public", $_[0])
+}
+
+sub exec_sql {
+    my ($sql, @args) = @_;
+
+    my $formatted = $sql;
+    for (@args) {
+        unless(/^\d+$/) {
+            $_ = "'$_'";
+        }
+
+        $formatted =~ s/\?/$_/;
+    }
+    print "Execute: $formatted\n";
+
+    my $stmt = $dbh->prepare($sql);
+
+    $stmt->execute(@args);
+}
+
 my @files = ('create.sql', 'functions.sql', 'policy.sql');
 
 my @users = map {"u$_"} (1..3);
@@ -32,37 +54,43 @@ for (@files) {
     my $sql = join '', <FH>;
     close FH;
 
-    $dbh->do($sql);
+    exec_sql($sql);
 }
 
-$dbh->do('DELETE FROM inventoryitem');
-$dbh->do("DELETE FROM item");
-$dbh->do('DELETE FROM Member');
+exec_sql('DELETE FROM inventoryitem');
+exec_sql("DELETE FROM item");
+exec_sql('DELETE FROM Member');
 
 for(@items) {
-    $dbh->do("INSERT INTO Item(name, price) VALUES (?, ?);", {}, @$_);
+    exec_sql("INSERT INTO Item(name, price) VALUES (?, ?)", @$_);
 
-    push @$_, $dbh->last_insert_id(undef, "public", "item");
+    push @$_, last_inserted "item";
 }
 
 for(@users) {
-    $dbh->do("DROP USER IF EXISTS $_");
-    $dbh->do("CREATE USER $_");
-    $dbh->do("GRANT player to $_");
+    exec_sql("DROP USER IF EXISTS $_");
+    exec_sql("CREATE USER $_");
+    exec_sql("GRANT player to $_");
 
-    $dbh->do('INSERT INTO Member VALUES (?, ?)', {}, $_, 10000);
+    exec_sql('INSERT INTO Member VALUES (?, ?)', $_, 10000);
 
     for my $i (1..3) {
         my $item = $items[int rand@items];
-        $dbh->do('INSERT INTO InventoryItem VALUES (?, ?)', {}, $_, $item->[2]);
+        exec_sql('INSERT INTO InventoryItem VALUES (?, ?)', $_, $item->[2]);
     }
 
     for my $i (1..1) {
         my $item = $items[int rand@items];
-        $dbh->do('INSERT INTO MemberPurchase (username, itemid, approved) VALUES (?, ?, false)', {}, $_, $item->[2]);
+        exec_sql('INSERT INTO MemberPurchase (username, itemid, approved) VALUES (?, ?, false)', $_, $item->[2]);
     }
 }
 
+
+# Create team, owned by u1, with u2 being a member and u3 requesting to join.
+exec_sql("INSERT INTO Team(name, leader) VALUES (?, ?)", "team1", "u1");
+exec_sql("INSERT INTO TeamMember(teamname, username) VALUES (?, ?)", "team1", "u1");
+exec_sql("INSERT INTO TeamMember(teamname, username) VALUES (?, ?)", "team1", "u2");
+exec_sql("INSERT INTO teamjoinrequest(teamname, username, approved) VALUES (?, ?, false)", "team1", "u3");
 
 
 $dbh->commit;
