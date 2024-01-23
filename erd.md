@@ -6,6 +6,7 @@ erDiagram
     }
 
     userpurchase[MemberPurchase] {
+        Id INTEGER PK
         Username TEXT FK
         ItemId INTEGER FK
         Approved BOOLEAN

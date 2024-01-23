@@ -19,3 +19,15 @@ Members have an inventory, with the items in the inventory described by a table 
 "TeamJoinRequest" is a table made where requests to join teams are placed. When a user requests to join a team, their username and the team name are placed in this table, allowing the team leader to accept the request.
 
 "Team" stores the information about a team. The fields are the primary key of "name" - the team name, and "leader" - the owner of the team which administers it.
+
+\subsection{Rationale}
+
+I designed the database this way in order to minimise data redundancy in the system. The design complies with 3rd normal form, having no data duplication, no composite keys, and no transitive dependencies. 
+
+\section{Security}
+
+The main security feature is the enabling of SSL for all database connections. This ensures that data exchanged during connections are not able to be viewed in the case of a MiTM attack.
+
+Row-level security is enabled for most rows in the database for players. This means that players can only see their own balance, inventory and purchase applications. Managers can see all users and applications however, enabling them to aid players with issues.
+
+Users have no direct access to tables other than to select from required tables. Functions wheich edit tables are run using \verb|SECURITY DEFINER| meaning they are executed as the postgres superuser. They all check for user permissions to execute actions.

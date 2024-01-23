@@ -201,13 +201,43 @@ postgres=> select * from Inventory();
 The following functions and procedures are defined:
 
 \begin{itemize}
-    \item \verb|Inventory()| - List all purchased items in the caller's inventory.
-    \item \verb|ApplyToBuy(itemId INTEGER)| - Create an application to purchase an item.
-    \item \verb|ApprovePurchaseApplication(applicationId INTEGER)| - Manager command to approve a transaction request.
-    \item \verb|ListPurchaseApplications()| - List all transaction requests, either just for the current user (player), or for all players (manager).
-    \item \verb|TransferBalance(toUser TEXT, amount INTEGER)| - Transfer 'amount' credits to 'toUser'. This does not require authorisation.
-    \item \verb|CreateTeam(name TEXT)| - Creates a new team with specified name, sets caller as the team leader.
-    \item \verb|RequestJoinTeam(team TEXT)| - Creates a team join application for specified team.
-    \item \verb|ListTeamRequests()| - Lists requests to join teams the caller is a leader of.
-    \item \verb|AcceptTeamRequest(requestId INTEGER)| - Accept the specified team join request.
+    \item \verb|FUNCTION Inventory()| - List all purchased items in the caller's inventory.
+    \item \verb|PROCEDURE ApplyToBuy(itemId INTEGER)| - Create an application to purchase an item by creating an entry in the \verb|MemberPurchase| table.
+    \item \verb|PROCEDURE ApprovePurchaseApplication(applicationId INTEGER)| - Manager command to approve a transaction request.
+        \begin{itemize}
+            \item First checks if application is already approved.
+            \item Then checks if the user has enough credits to buy the item.
+            \item Update the user's balance.
+            \item Set the application approved boolean to true.
+            \item Add the item to the user's inventory.
+        \end{itemize}
+    \item \verb|FUNCTION ListPurchaseApplications()| - List all transaction requests, either just for the current user (player), or for all players (manager).
+        \begin{itemize}
+            \item Select all items from \verb|MemberPurchase| and join the item table to get the item names.
+        \end{itemize}
+    \item \verb|PROCEDURE TransferBalance(toUser TEXT, amount INTEGER)| - Transfer 'amount' credits to 'toUser'. This does not require authorisation.
+        \begin{itemize}
+            \item First checks if the user is transferring to themselves.
+            \item Then checks if the calling user has enough credits to transfer the requested amount.
+            \item Then calculate the new balances and updates the user's balances.
+        \end{itemize}
+    \item \verb|PROCEDURE CreateTeam(name TEXT)| - Creates a new team with specified name, sets caller as the team leader.
+        \begin{itemize}
+            \item Creates a new value in \verb|Team|.
+            \item Then adds an entry to \verb|TeamMember| for the creator.
+        \end{itemize}
+    \item \verb|PROCEDURE RequestJoinTeam(team TEXT)| - Creates a team join application for specified team.
+        \begin{itemize}
+            \item First checks if a request has already been sent.
+            \item Next adds an entry to \verb|TeamJoinRequest| with the current user and the requested team.
+        \end{itemize}
+    \item \verb|FUNCTION ListTeamRequests()| - Lists requests to join teams the caller is a leader of from the \verb|TeamJoinRequest| table.
+    \item \verb|PROCEDURE AcceptTeamRequest(requestId INTEGER)| - Accept the specified team join request.
+        \begin{itemize}
+            \item First checks if the caller actually owns the team (is listed in the leader field).
+            \item Then sets the approved flag on the \verb|TeamJoinRequest| table.
+            \item Then adds the new member into the \verb|TeamMember| table.
+        \end{itemize}
 \end{itemize}
+
+The reasoning for not utilising views for some of the functions above is that the views bypass the row-level security. If PostgreSQL was running at version 16 or higher then the attribute \verb|SECURITY INVOKER| could have been used, but this is unsupported on the specified PostgreSQL version 13.

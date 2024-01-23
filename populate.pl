@@ -17,6 +17,8 @@ sub last_inserted {
     $dbh->last_insert_id(undef, "public", $_[0])
 }
 
+open DUMP, '>', 'dump.sql';
+
 sub exec_sql {
     my ($sql, @args) = @_;
 
@@ -29,7 +31,7 @@ sub exec_sql {
 
         $formatted =~ s/\?/$arg/;
     }
-    #print "Execute: $formatted\n";
+    print DUMP "$formatted\n\n";
 
     my $stmt = $dbh->prepare($sql);
 
@@ -84,19 +86,21 @@ for(@users) {
         exec_sql('INSERT INTO InventoryItem VALUES (?, ?)', $_, $item->[2]);
     }
 
-    for my $i (1..1) {
-        my $item = $items[int rand@items];
-        exec_sql('INSERT INTO MemberPurchase (username, itemid, approved) VALUES (?, ?, false)', $_, $item->[2]);
-    }
+    #for my $i (1..1) {
+    #    my $item = $items[int rand@items];
+    #    exec_sql('INSERT INTO MemberPurchase (username, itemid, approved) VALUES (?, ?, false)', $_, $item->[2]);
+    #}
 }
 
 
 # Create team, owned by u1, with u2 being a member and u3 requesting to join.
-exec_sql("INSERT INTO Team(name, leader) VALUES (?, ?)", "team1", "u1");
-exec_sql("INSERT INTO TeamMember(teamname, username) VALUES (?, ?)", "team1", "u1");
-exec_sql("INSERT INTO TeamMember(teamname, username) VALUES (?, ?)", "team1", "u2");
-exec_sql("INSERT INTO teamjoinrequest(teamname, username, approved) VALUES (?, ?, false)", "team1", "u3");
+#exec_sql("INSERT INTO Team(name, leader) VALUES (?, ?)", "team1", "u1");
+#exec_sql("INSERT INTO TeamMember(teamname, username) VALUES (?, ?)", "team1", "u1");
+#exec_sql("INSERT INTO TeamMember(teamname, username) VALUES (?, ?)", "team1", "u2");
+#exec_sql("INSERT INTO teamjoinrequest(teamname, username, approved) VALUES (?, ?, false)", "team1", "u3");
 
+
+close DUMP;
 
 $dbh->commit;
 $dbh->disconnect;
