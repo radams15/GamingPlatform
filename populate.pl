@@ -10,7 +10,7 @@ my $dbname = 'postgres';
 my $host = 'localhost';
 my @creds = ('postgres', 'password');
 
-my $dbh = DBI->connect("dbi:Pg:dbname=$dbname;host=$host", @creds, {AutoCommit => 0, RaiseError => 1})
+my $dbh = DBI->connect("dbi:Pg:dbname=$dbname;host=$host;sslmode=require", @creds, {AutoCommit => 0, RaiseError => 1})
     or die "Unable to connect!";
 
 sub last_inserted {
@@ -29,7 +29,7 @@ sub exec_sql {
 
         $formatted =~ s/\?/$arg/;
     }
-    print "Execute: $formatted\n";
+    #print "Execute: $formatted\n";
 
     my $stmt = $dbh->prepare($sql);
 

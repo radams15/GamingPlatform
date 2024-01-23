@@ -196,3 +196,18 @@ postgres=> select * from Inventory();
 \end{lstlisting}
 
 
+\section{Procedures and Functions}
+
+The following functions and procedures are defined:
+
+\begin{itemize}
+    \item \verb|Inventory()| - List all purchased items in the caller's inventory.
+    \item \verb|ApplyToBuy(itemId INTEGER)| - Create an application to purchase an item.
+    \item \verb|ApprovePurchaseApplication(applicationId INTEGER)| - Manager command to approve a transaction request.
+    \item \verb|ListPurchaseApplications()| - List all transaction requests, either just for the current user (player), or for all players (manager).
+    \item \verb|TransferBalance(toUser TEXT, amount INTEGER)| - Transfer 'amount' credits to 'toUser'. This does not require authorisation.
+    \item \verb|CreateTeam(name TEXT)| - Creates a new team with specified name, sets caller as the team leader.
+    \item \verb|RequestJoinTeam(team TEXT)| - Creates a team join application for specified team.
+    \item \verb|ListTeamRequests()| - Lists requests to join teams the caller is a leader of.
+    \item \verb|AcceptTeamRequest(requestId INTEGER)| - Accept the specified team join request.
+\end{itemize}
