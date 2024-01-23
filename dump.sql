@@ -1,3 +1,70 @@
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
+DROP ROLE IF EXISTS Player;
+DROP ROLE IF EXISTS Manager;
+DROP TABLE IF EXISTS Member;
+DROP TABLE IF EXISTS Item;
+DROP TABLE IF EXISTS InventoryItem;
+DROP TABLE IF EXISTS MemberPurchase;
+DROP TABLE IF EXISTS Team;
+DROP TABLE IF EXISTS TeamMember;
+DROP TABLE IF EXISTS TeamJoinRequest;
+DROP TABLE IF EXISTS Tournament;
+DROP TABLE IF EXISTS TournamentTeam;
+
+CREATE ROLE Player;
+CREATE ROLE Manager;
+
+CREATE TABLE Member (
+    Username TEXT PRIMARY KEY,
+    Balance INTEGER
+);
+
+CREATE TABLE Item (
+    Id SERIAL PRIMARY KEY,
+    Price INTEGER,
+    Name TEXT
+);
+
+CREATE TABLE InventoryItem (
+    Username TEXT REFERENCES Member (Username),
+    ItemId INTEGER REFERENCES Item(Id)
+);
+
+CREATE TABLE MemberPurchase (
+    Id SERIAL PRIMARY KEY,
+    Username TEXT REFERENCES Member (Username),
+    ItemId INTEGER REFERENCES Item(Id),
+    Approved BOOLEAN
+);
+
+
+CREATE TABLE Team (
+    Name TEXT PRIMARY KEY,
+    Leader TEXT REFERENCES Member (Username)
+);
+
+CREATE TABLE TeamMember (
+    TeamName TEXT REFERENCES Team(Name),
+    Username TEXT REFERENCES Member (Username)
+);
+
+CREATE TABLE TeamJoinRequest (
+    Id SERIAL PRIMARY KEY,
+    TeamName TEXT REFERENCES Team(Name),
+    Username TEXT REFERENCES Member (Username),
+    Approved BOOLEAN
+);
+
+CREATE TABLE Tournament (
+    Name TEXT PRIMARY KEY
+);
+
+CREATE TABLE TournamentTeam (
+    TournamentName TEXT REFERENCES Tournament(Name),
+    TeamName TEXT REFERENCES Team(Name)
+);
+
 DROP FUNCTION IF EXISTS Inventory;
 DROP PROCEDURE IF EXISTS TransferBalance;
 DROP PROCEDURE IF EXISTS ApplyToBuy;
@@ -209,3 +276,114 @@ BEGIN
     INSERT INTO teammember VALUES (teamname, requestingUser);
 end;
 $func$ LANGUAGE PLPGSQL SECURITY DEFINER;
+
+DROP POLICY IF EXISTS user_row_policy ON Member;
+DROP POLICY IF EXISTS inventory_row_policy ON inventoryitem;
+DROP POLICY IF EXISTS purchase_row_policy ON memberpurchase;
+DROP POLICY IF EXISTS teamrequest_row_policy ON teamjoinrequest;
+
+DROP POLICY IF EXISTS manager_member_policy ON Member;
+
+CREATE POLICY user_row_policy ON Member FOR ALL TO player USING (username=current_user);
+CREATE POLICY inventory_row_policy ON inventoryitem FOR ALL TO player USING (username=current_user);
+CREATE POLICY purchase_row_policy ON memberpurchase FOR ALL TO player USING (username=current_user);
+CREATE POLICY teamrequest_row_policy ON teamjoinrequest FOR ALL TO player USING (
+    EXISTS(
+        SELECT 1 FROM team
+                 WHERE leader = current_user AND team.name = teamname
+    )
+);
+
+ALTER TABLE Member ENABLE ROW LEVEL SECURITY;
+ALTER TABLE inventoryitem ENABLE ROW LEVEL SECURITY;
+ALTER TABLE memberpurchase ENABLE ROW LEVEL SECURITY;
+ALTER TABLE teamjoinrequest ENABLE ROW LEVEL SECURITY;
+
+GRANT USAGE ON SCHEMA public TO PUBLIC;
+
+GRANT SELECT ON item to PUBLIC;
+
+GRANT SELECT ON Member to player;
+GRANT SELECT ON inventoryitem to player;
+GRANT SELECT ON memberpurchase to player;
+GRANT SELECT ON team to player;
+GRANT SELECT ON teammember to player;
+GRANT SELECT ON tournament to player;
+GRANT SELECT ON tournamentteam to player;
+GRANT SELECT ON teamjoinrequest to player;
+
+GRANT SELECT, UPDATE ON member to manager;
+GRANT SELECT, UPDATE ON memberpurchase to manager;
+GRANT INSERT ON inventoryitem to manager;
+GRANT SELECT ON team to manager;
+GRANT SELECT ON teammember to manager;
+GRANT SELECT ON tournament to manager;
+GRANT SELECT ON tournamentteam to manager;
+GRANT SELECT ON teamjoinrequest to manager;
+
+DELETE FROM inventoryitem;
+
+DELETE FROM item;
+
+DELETE FROM Member;
+
+INSERT INTO Item(name, price) VALUES ('Sword', 50);
+
+INSERT INTO Item(name, price) VALUES ('Potion', 5);
+
+INSERT INTO Item(name, price) VALUES ('Magic Tome', 10);
+
+INSERT INTO Item(name, price) VALUES ('Spellbook', 40);
+
+INSERT INTO Item(name, price) VALUES ('Wand', 20);
+
+INSERT INTO Item(name, price) VALUES ('Armour', 25);
+
+DROP USER IF EXISTS m1;
+
+CREATE USER m1 BYPASSRLS;
+
+GRANT manager to m1;
+
+DROP USER IF EXISTS u1;
+
+CREATE USER u1 INHERIT;
+
+GRANT player to u1;
+
+INSERT INTO Member VALUES ('u1', 10000);
+
+INSERT INTO InventoryItem VALUES ('u1', 4);
+
+INSERT INTO InventoryItem VALUES ('u1', 2);
+
+INSERT INTO InventoryItem VALUES ('u1', 1);
+
+DROP USER IF EXISTS u2;
+
+CREATE USER u2 INHERIT;
+
+GRANT player to u2;
+
+INSERT INTO Member VALUES ('u2', 10000);
+
+INSERT INTO InventoryItem VALUES ('u2', 2);
+
+INSERT INTO InventoryItem VALUES ('u2', 3);
+
+INSERT INTO InventoryItem VALUES ('u2', 2);
+
+DROP USER IF EXISTS u3;
+
+CREATE USER u3 INHERIT;
+
+GRANT player to u3;
+
+INSERT INTO Member VALUES ('u3', 10000);
+
+INSERT INTO InventoryItem VALUES ('u3', 3);
+
+INSERT INTO InventoryItem VALUES ('u3', 6);
+
+INSERT INTO InventoryItem VALUES ('u3', 3);
+

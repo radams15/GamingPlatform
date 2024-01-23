@@ -31,6 +31,9 @@ sub exec_sql {
 
         $formatted =~ s/\?/$arg/;
     }
+
+    $formatted = "$formatted;" unless($formatted =~ /;$/g); # Append semicolon if none there
+
     print DUMP "$formatted\n\n";
 
     my $stmt = $dbh->prepare($sql);
