@@ -31,3 +31,5 @@ The main security feature is the enabling of SSL for all database connections. T
 Row-level security is enabled for most rows in the database for players. This means that players can only see their own balance, inventory and purchase applications. Managers can see all users and applications however, enabling them to aid players with issues.
 
 Users have no direct access to tables other than to select from required tables. Functions wheich edit tables are run using \verb|SECURITY DEFINER| meaning they are executed as the postgres superuser. They all check for user permissions to execute actions.
+
+For deployment, I would enable disk encryption for the system running the program. This would require access to the server running the program so is outside of the scope of the assignment, but would be extremely beneficial to the overall security of the solution.

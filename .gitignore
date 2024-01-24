@@ -1,2 +1,5 @@
 data/
 spec.pdf
+conf/privkey.pem
+conf/server.crt
+conf/server.key
